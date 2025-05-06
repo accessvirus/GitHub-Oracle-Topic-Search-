@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Topic Search - MK7 [Tailwind Futuristic]</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
+    <!-- Custom Tailwind Configuration (Optional but Recommended for Fonts/Colors) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'],
+                        'heading': ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        'neon-blue': '#00d1ff',
+                        'neon-blue-hover': '#33dbff',
+                        'dark-bg': '#121212',
+                        'dark-card': '#1e1e1e',
+                        'dark-border': '#333333',
+                        'light-text': '#e0e0e0',
+                        'muted-text': '#888888',
+                    },
+                    boxShadow: {
+                        'neon': '0 0 15px rgba(0, 209, 255, 0.5), 0 0 5px rgba(0, 209, 255, 0.3)',
+                        'neon-sm': '0 0 8px rgba(0, 209, 255, 0.4)',
+                        'card': '0 4px 10px rgba(0, 0, 0, 0.3)',
+                        'card-hover': '0 8px 25px rgba(0, 0, 0, 0.5)',
+                    },
+                    keyframes: {
+                        gradient: {
+                            '0%, 100%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
+                        },
+                        pulseText: {
+                            '0%, 100%': { opacity: '0.6' },
+                            '50%': { opacity: '1' },
+                        }
+                    },
+                    animation: {
+                        gradient: 'gradient 15s ease infinite',
+                        pulseText: 'pulseText 1.5s ease-in-out infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        /* Custom base styles if needed */
+        body {
+            @apply bg-dark-bg text-light-text font-sans antialiased;
+            @apply bg-gradient-to-r from-dark-bg via-gray-900 to-dark-bg; /* Gradient */
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        /* Custom glow for input focus */
+        #topics-input:focus {
+            @apply ring-2 ring-neon-blue ring-offset-2 ring-offset-dark-bg border-transparent outline-none shadow-neon;
+        }
+        #search-button:focus {
+             @apply ring-2 ring-neon-blue ring-offset-2 ring-offset-dark-bg outline-none;
+        }
+        /* Ensure button focus glow matches input */
+         .input-container:focus-within #topics-input {
+             @apply ring-2 ring-neon-blue ring-offset-2 ring-offset-dark-bg border-transparent outline-none shadow-neon;
+         }
+         .input-container:focus-within #search-button {
+             @apply bg-neon-blue text-dark-bg border-neon-blue shadow-neon;
+         }
+    </style>
+
+</head>
+<body class="py-16 px-4">
+
+<div class="container mx-auto max-w-3xl"> <!-- Centered container -->
+    <h1 class="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-10 tracking-wide text-shadow-neon-sm">
+        SynthWave Topic Search
+    </h1>
+
+    <!-- Container for Collected Topics -->
+    <div id="collected-topics-container" class="flex flex-wrap justify-center gap-2 mb-10">
+        <!-- Badges will be inserted here -->
+        <!-- Example Badge Style (applied in JS):
+             <a href="#" class="badge border border-muted-text text-muted-text hover:bg-neon-blue hover:border-neon-blue hover:text-dark-bg hover:shadow-neon-sm transform hover:scale-105 transition duration-200">topic</a>
+        -->
+    </div>
+
+    <!-- Search Input and Button -->
+    <div class="relative input-container mb-12"> <!-- Container for focus-within -->
+        <div class="flex rounded-full shadow-lg bg-dark-card border border-dark-border overflow-hidden">
+            <input type="text" id="topics-input" class="flex-grow bg-transparent text-lg px-6 py-3 text-light-text placeholder-muted-text focus:outline-none" placeholder="Initiate topic query...">
+            <button id="search-button" class="bg-dark-card text-neon-blue font-semibold px-8 py-3 hover:bg-neon-blue hover:text-dark-bg hover:shadow-neon transition duration-300 ease-in-out transform hover:scale-105">
+                Execute
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Message -->
+    <div id="loading-message" class="hidden text-center text-muted-text text-lg mt-10 animate-pulseText">
+        Processing Query...
+    </div>
+
+    <!-- Results Section -->
+    <div id="results-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-10" aria-live="polite">
+        <!-- Repo Cards will be inserted here -->
+        <!-- Example Card Structure (applied in JS):
+        <div class="col">
+            <div class="card bg-dark-card border border-dark-border rounded-lg shadow-card hover:shadow-card-hover hover:border-neon-blue transform hover:-translate-y-1 hover:scale-[1.02] transition duration-300 ease-in-out h-full">
+                <div class="card-body p-5 flex flex-col h-full">
+                    <h5 class="card-title mb-2">
+                        <a href="#" target="_blank" rel="noopener noreferrer" class="repo-title font-heading font-semibold text-xl text-neon-blue hover:text-neon-blue-hover hover:shadow-neon-sm transition duration-200">Repo Name</a>
+                    </h5>
+                    <p class="repo-description text-muted-text text-sm mb-4 flex-grow">Description...</p>
+                    <div class="mt-auto pt-3 border-t border-dark-border text-xs text-muted-text space-y-1">
+                        <p class="repo-stats">Stars: 0 | Forks: 0</p>
+                        <p class="repo-language">Language: N/A</p>
+                        <p class="repo-last-updated">Updated: Date</p>
+                        <p class="repo-owner">Owner: <a href="#" target="_blank" rel="noopener noreferrer" class="font-semibold hover:text-neon-blue transition duration-200">owner</a></p>
+                        <div class="repo-topics mt-3">
+                            <small class="block mb-1">Topics:</small>
+                            <a href="#" class="badge topic-link-badge border border-neon-blue text-neon-blue hover:bg-neon-blue hover:text-dark-bg transform hover:scale-105 transition duration-200">topic1</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        -->
+    </div>
+
+    <!-- Pagination Controls -->
+    <nav id="pagination-controls" aria-label="Search results navigation" class="hidden mt-12">
+        <ul class="pagination flex justify-center space-x-2">
+             <!-- Example Pagination Item (applied in JS):
+             <li class="page-item">
+                 <button class="page-link px-4 py-2 bg-dark-card border border-dark-border text-muted-text rounded hover:border-neon-blue hover:text-neon-blue hover:shadow-neon-sm transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">Prev</button>
+             </li>
+             <li class="page-item active">
+                 <span class="page-link px-4 py-2 bg-neon-blue border border-neon-blue text-dark-bg rounded shadow-neon-sm">1</span>
+             </li>
+              -->
+        </ul>
+    </nav>
+
+</div> <!-- /container -->
+
+<!-- JS Logic (Needs slight adjustments for Tailwind classes) -->
+<script>
+    // State for pagination
+    let currentPage = 1;
+    const perPage = 15;
+
+    /* --------------------------------- Step 1: Handling Input --------------------------------- */
+    function getSearchQuery() {
+        const input = document.getElementById('topics-input').value;
+        return input.split(',')
+                    .map(topic => topic.trim())
+                    .filter(Boolean);
+    }
+
+    /* --------------------------------- Step 2: Fetching GitHub Repos --------------------------------- */
+    async function fetchGitHubRepos(query, page = 1) {
+        const url = `https://api.github.com/search/repositories?q=${query}+in:topics&per_page=${perPage}&page=${page}`;
+        document.getElementById('loading-message').classList.remove('hidden');
+        document.getElementById('results-container').innerHTML = '';
+        document.getElementById('pagination-controls').classList.add('hidden');
+        document.getElementById('collected-topics-container').innerHTML = '';
+
+        try {
+            const response = await fetch(url);
+            if (response.status === 403) {
+                throw new Error('API Rate Limit Exceeded. Standby...');
+            }
+            if (!response.ok) throw new Error(`Data Stream Error (Status: ${response.status})`);
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            handleError(error);
+            return null;
+        }
+    }
+
+    /* --------------------------------- Step 3: Handling Errors --------------------------------- */
+    function handleError(error) {
+        console.error("System Error:", error);
+        const container = document.getElementById('results-container');
+        // Tailwind styled error
+        container.innerHTML = `<div class="col-span-full text-center text-red-400 mt-4 p-4 border border-red-400 rounded-lg bg-red-900/30">
+                                    <span class="font-bold text-red-300">Error:</span> ${error.message}
+                               </div>`;
+        document.getElementById('loading-message').classList.add('hidden');
+        document.getElementById('pagination-controls').classList.add('hidden');
+        document.getElementById('collected-topics-container').innerHTML = '';
+    }
+
+    /* --------------------------------- Step 4: Displaying Results --------------------------------- */
+    function displayResults(data) {
+        const container = document.getElementById('results-container');
+        const repos = data.items || [];
+        container.innerHTML = '';
+
+        if (repos.length === 0) {
+            container.innerHTML = '<p class="col-span-full text-center text-muted-text mt-4">Query yielded no results.</p>';
+            document.getElementById('pagination-controls').classList.add('hidden');
+            return;
+        }
+
+        repos.forEach(repo => {
+            const repoCard = createRepoCard(repo); // This function now needs to generate Tailwind HTML
+            container.appendChild(repoCard);
+        });
+        collectAndDisplayUniqueTopics(repos);
+    }
+
+    /* --- Helper Functions for Displaying Topics --- */
+    function collectAndDisplayUniqueTopics(repos) {
+        const allTopics = repos.flatMap(repo => repo.topics || []);
+        const uniqueTopics = [...new Set(allTopics)].sort();
+        displayCollectedTopics(uniqueTopics);
+    }
+
+    function displayCollectedTopics(topics) {
+        const container = document.getElementById('collected-topics-container');
+        container.innerHTML = ''; // Clear previous
+
+        if (topics.length > 0) {
+            topics.forEach(topic => {
+                const badgeLink = document.createElement('a');
+                badgeLink.href = '#';
+                // Apply Tailwind classes for collected topic badges
+                badgeLink.className = 'badge inline-block px-3 py-1 text-sm rounded-full border border-muted-text text-muted-text hover:bg-neon-blue hover:border-neon-blue hover:text-dark-bg hover:shadow-neon-sm transform hover:scale-105 transition duration-200 cursor-pointer';
+                badgeLink.dataset.topic = topic;
+                badgeLink.textContent = topic;
+                container.appendChild(badgeLink);
+            });
+        }
+    }
+
+    /* --------------------------------- Step 4.5: Handling Pagination Display --------------------------------- */
+    function displayPagination(totalCount, query) {
+        const paginationContainer = document.getElementById('pagination-controls');
+        const paginationList = paginationContainer.querySelector('.pagination');
+        if (!paginationList) return; // Safety check
+        paginationList.innerHTML = ''; // Clear previous items
+
+        const maxResults = 1000;
+        const displayableTotalCount = Math.min(totalCount, maxResults);
+        const totalPages = Math.ceil(displayableTotalCount / perPage);
+
+        if (totalPages <= 1) {
+            paginationContainer.classList.add('hidden');
+            return;
+        }
+        paginationContainer.classList.remove('hidden');
+
+        // Base classes for pagination buttons
+        const baseButtonClasses = 'page-link inline-block px-4 py-2 bg-dark-card border border-dark-border text-muted-text rounded hover:border-neon-blue hover:text-neon-blue hover:shadow-neon-sm transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
+        const activeClasses = 'bg-neon-blue border-neon-blue text-dark-bg shadow-neon-sm';
+        const disabledClasses = 'opacity-50 cursor-not-allowed';
+
+        // Previous Button
+        const prevLi = document.createElement('li');
+        prevLi.className = 'page-item';
+        const prevButton = document.createElement('button');
+        prevButton.className = baseButtonClasses;
+        prevButton.innerHTML = '&laquo; Prev';
+        prevButton.dataset.page = currentPage - 1;
+        prevButton.dataset.query = query;
+        if (currentPage === 1) {
+            prevButton.disabled = true;
+            prevButton.classList.add(...disabledClasses.split(' '));
+        }
+        prevLi.appendChild(prevButton);
+        paginationList.appendChild(prevLi);
+
+        // Current Page Info (Optional - can add page number buttons later)
+        const currentLi = document.createElement('li');
+        currentLi.className = 'page-item';
+        const currentSpan = document.createElement('span');
+        currentSpan.className = `${baseButtonClasses} ${activeClasses}`; // Style like active button
+        currentSpan.textContent = `Page ${currentPage} / ${totalPages}`;
+        currentLi.appendChild(currentSpan);
+        paginationList.appendChild(currentLi);
+
+        // Next Button
+        const nextLi = document.createElement('li');
+        nextLi.className = 'page-item';
+        const nextButton = document.createElement('button');
+        nextButton.className = baseButtonClasses;
+        nextButton.innerHTML = 'Next &raquo;';
+        nextButton.dataset.page = currentPage + 1;
+        nextButton.dataset.query = query;
+        if (currentPage >= totalPages) {
+            nextButton.disabled = true;
+            nextButton.classList.add(...disabledClasses.split(' '));
+        }
+        nextLi.appendChild(nextButton);
+        paginationList.appendChild(nextLi);
+
+        // Add event listeners AFTER appending
+        paginationList.querySelectorAll('.page-link[data-page]').forEach(button => {
+             if (!button.disabled) { // Only add listener to non-disabled buttons
+                button.addEventListener('click', handlePaginationClick);
+             }
+        });
+    }
+
+    /* --------------------------------- Step 5: Creating Repo Cards --------------------------------- */
+    function createRepoCard(repo) {
+        // Create elements and apply Tailwind classes
+        const col = document.createElement('div');
+        // col.className = 'col'; // Not needed with grid
+
+        const card = document.createElement('div');
+        card.className = 'card bg-dark-card border border-dark-border rounded-lg shadow-card hover:shadow-card-hover hover:border-neon-blue transform hover:-translate-y-1 hover:scale-[1.02] transition duration-300 ease-in-out h-full';
+
+        const cardBody = document.createElement('div');
+        cardBody.className = 'card-body p-5 flex flex-col h-full';
+
+        const titleContainer = document.createElement('h5');
+        titleContainer.className = 'card-title mb-2';
+        const titleLink = document.createElement('a');
+        titleLink.href = repo.html_url;
+        titleLink.target = '_blank';
+        titleLink.rel = 'noopener noreferrer';
+        titleLink.className = 'repo-title font-heading font-semibold text-xl text-neon-blue hover:text-neon-blue-hover hover:shadow-neon-sm transition duration-200';
+        titleLink.textContent = repo.name;
+        titleContainer.appendChild(titleLink);
+
+        const description = document.createElement('p');
+        description.className = 'repo-description text-muted-text text-sm mb-4 flex-grow';
+        description.textContent = repo.description || 'No description available.';
+
+        const detailsDiv = document.createElement('div');
+        detailsDiv.className = 'mt-auto pt-3 border-t border-dark-border text-xs text-muted-text space-y-1';
+
+        const stats = document.createElement('p');
+        stats.className = 'repo-stats';
+        stats.innerHTML = `<small>Stars: ${repo.stargazers_count} | Forks: ${repo.forks_count}</small>`;
+
+        const language = document.createElement('p');
+        language.className = 'repo-language';
+        language.innerHTML = `<small>Language: ${repo.language || 'N/A'}</small>`;
+
+        const lastUpdated = document.createElement('p');
+        lastUpdated.className = 'repo-last-updated';
+        lastUpdated.innerHTML = `<small>Updated: ${new Date(repo.updated_at).toLocaleDateString()}</small>`;
+
+        const owner = document.createElement('p');
+        owner.className = 'repo-owner';
+        owner.innerHTML = `<small>Owner: <a href="${repo.owner.html_url}" target="_blank" rel="noopener noreferrer" class="font-semibold hover:text-neon-blue transition duration-200">${repo.owner.login}</a></small>`;
+
+        const topicsDiv = document.createElement('div');
+        topicsDiv.className = 'repo-topics mt-3';
+        if (repo.topics && repo.topics.length > 0) {
+            let topicsHTML = '<small class="block mb-1 text-muted-text">Topics:</small> ';
+            topicsHTML += repo.topics.map(topic =>
+                `<a href="#" class="badge inline-block px-2 py-1 text-xs rounded-full topic-link-badge border border-neon-blue text-neon-blue hover:bg-neon-blue hover:text-dark-bg transform hover:scale-105 transition duration-200 mr-1 mb-1 cursor-pointer" data-topic="${topic}">${topic}</a>`
+            ).join(' ');
+            topicsDiv.innerHTML = topicsHTML;
+        } else {
+            topicsDiv.innerHTML = '<small class="text-muted-text">Topics: None listed</small>';
+        }
+
+        detailsDiv.append(stats, language, lastUpdated, owner, topicsDiv);
+        cardBody.append(titleContainer, description, detailsDiv);
+        card.appendChild(cardBody);
+        col.appendChild(card);
+
+        return col;
+    }
+
+    /* --------------------------------- Step 5.5: Handling Pagination Clicks --------------------------------- */
+    async function handlePaginationClick(event) {
+        event.preventDefault();
+        const button = event.target.closest('button.page-link'); // Ensure we get the button
+        if (!button || button.disabled) return; // Ignore if not a button or disabled
+
+        const targetPage = parseInt(button.dataset.page, 10);
+        const query = button.dataset.query;
+
+        if (!isNaN(targetPage) && targetPage > 0 && query) {
+            currentPage = targetPage;
+            const data = await fetchGitHubRepos(query, currentPage);
+            if (data) {
+                displayResults(data);
+                displayPagination(data.total_count, query);
+                // Scroll to top of container
+                document.querySelector('.container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            document.getElementById('loading-message').classList.add('hidden');
+        } else {
+            console.warn("Pagination Error: Invalid target.");
+        }
+    }
+
+    /* --- Helper function to trigger search --- */
+    async function performSearch(topicsArray = null) {
+        const topics = topicsArray || getSearchQuery();
+        if (topics.length === 0) {
+            handleError(new Error('Query requires at least one topic.'));
+            return;
+        }
+        const query = topics.map(topic => `topic:${topic}`).join(' ');
+        currentPage = 1;
+        const data = await fetchGitHubRepos(query, currentPage);
+        if (data) {
+            displayResults(data);
+            displayPagination(data.total_count, query);
+        }
+        document.getElementById('loading-message').classList.add('hidden');
+    }
+
+    /* --------------------------------- Step 6: Triggering the Search --------------------------------- */
+    function handleTopicClick(event) {
+        const topicBadge = event.target.closest('[data-topic]');
+        if (topicBadge) {
+            event.preventDefault();
+            const topic = topicBadge.dataset.topic;
+            if (topic) {
+                document.getElementById('topics-input').value = topic;
+                performSearch([topic]);
+            }
+        }
+    }
+
+    /* --- Add event listeners --- */
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('search-button').addEventListener('click', () => performSearch());
+        document.getElementById('topics-input').addEventListener('keypress', event => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                performSearch();
+            }
+        });
+        // Use event delegation on the body or a closer static parent
+        document.body.addEventListener('click', handleTopicClick);
+        // Remove specific listeners for dynamic content containers if delegating from body
+        // document.getElementById('results-container').addEventListener('click', handleTopicClick);
+        // document.getElementById('collected-topics-container').addEventListener('click', handleTopicClick);
+
+         // Add listener for pagination clicks (delegated)
+        const paginationNav = document.getElementById('pagination-controls');
+        if (paginationNav) {
+            paginationNav.addEventListener('click', handlePaginationClick);
+        }
+    });
+</script>
+
+</body>
+</html>

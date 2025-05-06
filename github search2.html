@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Topic Search</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* --------------------------------- General Styles --------------------------------- */
+        /* Styling for repo cards */
+        .repo-card {
+            margin-bottom: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .repo-title {
+            font-weight: bold;
+            font-size: 1.25em;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .repo-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .repo-stats {
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .repo-language, .repo-last-updated, .repo-owner {
+            font-size: 12px;
+            color: #555;
+            margin-top: 5px;
+        }
+
+        /* --------------------------------- Hover Effects --------------------------------- */
+        .repo-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --------------------------------- Mobile Responsiveness --------------------------------- */
+        @media (max-width: 768px) {
+            .repo-card {
+                margin-bottom: 15px;
+            }
+
+            .repo-title {
+                font-size: 1em;
+            }
+
+            .repo-description {
+                font-size: 13px;
+            }
+
+            .repo-stats, .repo-language, .repo-last-updated, .repo-owner {
+                font-size: 11px;
+            }
+        }
+
+        /* Styling for Container and Title */
+        h1 {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Add slight padding inside cards */
+        .card-body {
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* --------------------------------- Button Styling --------------------------------- */
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+        /* --------------------------------- Loading Message --------------------------------- */
+        #loading-message {
+            display: none;
+            text-align: center;
+            font-size: 1.2em;
+            margin-top: 20px;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Main Container -->
+<div class="container mt-5">
+    <h1>GitHub Multi-Topics Search</h1>
+
+    <!-- Input Section for Topics -->
+    <div class="mb-4">
+        <label for="topics-input" class="form-label">Enter Topics (separated by commas)</label>
+        <input type="text" id="topics-input" class="form-control" placeholder="e.g., drag, html">
+    </div>
+
+    <!-- Search Button -->
+    <button id="search-button" class="btn btn-primary">Search GitHub</button>
+
+    <!-- Loading Message -->
+    <div id="loading-message">Loading results...</div>
+
+    <!-- Results Section - Added aria-live -->
+    <div id="results-container" class="mt-4" aria-live="polite">
+        <!-- Dynamic Results will be inserted here -->
+    </div>
+
+    <!-- Pagination Controls -->
+    <nav id="pagination-controls" aria-label="Search results navigation" class="mt-4 d-none">
+    </nav>
+</div>
+
+<!-- Bootstrap JS & Popper -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+<script>
+    // State for pagination
+    let currentPage = 1;
+    const perPage = 15; // Number of results per page
+    /* --------------------------------- Step 1: Handling Input --------------------------------- */
+    // Function to get the topics entered by the user.
+    function getSearchQuery() {
+        const input = document.getElementById('topics-input').value;
+        return input.split(',')
+                    .map(topic => topic.trim())   // Trim extra spaces
+                    .filter(Boolean);             // Remove empty strings
+    }
+
+    /* --------------------------------- Step 2: Fetching GitHub Repos --------------------------------- */
+    // Function to fetch GitHub repositories based on the search query (topics).
+    async function fetchGitHubRepos(query, page = 1) {
+        const url = `https://api.github.com/search/repositories?q=${query}+in:topics&per_page=${perPage}&page=${page}`;
+        document.getElementById('loading-message').style.display = 'block'; // Show loading
+        document.getElementById('results-container').innerHTML = ''; // Clear previous results
+        document.getElementById('pagination-controls').classList.add('d-none'); // Hide pagination
+
+        try {
+            const response = await fetch(url);
+            // Check for rate limiting specifically
+            if (response.status === 403) {
+                throw new Error('GitHub API rate limit exceeded. Please wait and try again.');
+                // Future enhancement: Try to parse X-RateLimit-Reset header here
+                // const resetTime = response.headers.get('X-RateLimit-Reset');
+                // if (resetTime) {
+                //     const resetDate = new Date(parseInt(resetTime, 10) * 1000);
+                //     throw new Error(`GitHub API rate limit exceeded. Try again after ${resetDate.toLocaleTimeString()}.`);
+                // } else {
+                //     throw new Error('GitHub API rate limit exceeded. Please wait and try again.');
+                // }
+            }
+            if (!response.ok) throw new Error('Failed to fetch data from GitHub');
+            const data = await response.json();
+            return data; // Return the full data object (includes total_count)
+        } catch (error) {
+            handleError(error);
+            return [];
+        }
+    }
+
+    /* --------------------------------- Step 3: Handling Errors --------------------------------- */
+    // Function to handle errors and display an error message.
+    function handleError(error) {
+        const container = document.getElementById('results-container');
+        container.innerHTML = `<div class="alert alert-danger" role="alert">
+            Error: ${error.message}
+        </div>`;
+        document.getElementById('loading-message').style.display = 'none'; // Hide loading on error
+    }
+
+    /* --------------------------------- Step 4: Displaying Results --------------------------------- */
+    // Function to display the list of repositories returned by the GitHub API.
+    function displayResults(data) {
+        const container = document.getElementById('results-container');
+        const repos = data.items || [];
+        container.innerHTML = ''; // Clear any previous results
+
+        if (repos.length === 0) {
+            container.innerHTML = '<p>No results found.</p>';
+            document.getElementById('pagination-controls').classList.add('d-none'); // Hide pagination
+            return;
+        }
+
+
+        repos.forEach(repo => {
+            const repoCard = createRepoCard(repo);  // Generate card for each repo
+            container.appendChild(repoCard);        // Append the card to the results container
+        });
+    }
+
+    /* --------------------------------- Step 4.5: Handling Pagination Display --------------------------------- */
+    function displayPagination(totalCount, query) {
+        const paginationContainer = document.getElementById('pagination-controls');
+        paginationContainer.innerHTML = ''; // Clear previous controls
+        const totalPages = Math.ceil(totalCount / perPage);
+
+        if (totalPages <= 1) {
+            paginationContainer.classList.add('d-none'); // Hide if only one page or less
+            return;
+        }
+
+        paginationContainer.classList.remove('d-none'); // Show pagination controls
+
+        const paginationList = document.createElement('ul');
+        paginationList.classList.add('pagination', 'justify-content-center');
+
+        // Previous Button
+        const prevLi = document.createElement('li');
+        prevLi.classList.add('page-item'); // Add base class
+        if (currentPage === 1) { // Conditionally add disabled class
+            prevLi.classList.add('disabled');
+        }
+        prevLi.innerHTML = `<button class="page-link" ${currentPage === 1 ? 'tabindex="-1" aria-disabled="true"' : ''} data-page="${currentPage - 1}" data-query="${query}">Previous</button>`;
+        paginationList.appendChild(prevLi);
+
+        // Current Page Info (Simple version)
+        const currentLi = document.createElement('li');
+        currentLi.classList.add('page-item', 'disabled');
+        currentLi.innerHTML = `<span class="page-link">Page ${currentPage} of ${totalPages}</span>`;
+        paginationList.appendChild(currentLi);
+
+        // Next Button
+        const nextLi = document.createElement('li');
+        nextLi.classList.add('page-item'); // Add base class
+        if (currentPage >= totalPages) { // Conditionally add disabled class
+            nextLi.classList.add('disabled');
+        }
+        nextLi.innerHTML = `<button class="page-link" ${currentPage >= totalPages ? 'tabindex="-1" aria-disabled="true"' : ''} data-page="${currentPage + 1}" data-query="${query}">Next</button>`;
+        paginationList.appendChild(nextLi);
+
+        paginationContainer.appendChild(paginationList);
+
+        // Add event listeners to new buttons
+        paginationContainer.querySelectorAll('.page-link[data-page]').forEach(button => {
+            button.addEventListener('click', handlePaginationClick);
+        });
+    }
+
+    /* --------------------------------- Step 5: Creating Repo Cards --------------------------------- */
+    // Function to create a Bootstrap card for each repository.
+    function createRepoCard(repo) {
+        const card = document.createElement('div');
+        card.classList.add('card', 'repo-card');
+
+        const cardBody = document.createElement('div');
+        cardBody.classList.add('card-body');
+
+        // Repository Title (Link)
+        const title = document.createElement('a');
+        title.href = repo.html_url;
+        title.target = '_blank'; // Open in new tab
+        title.rel = 'noopener noreferrer'; // Security measure for target="_blank"
+        title.classList.add('repo-title');
+        title.textContent = repo.name;
+
+        // Repository Description
+        const description = document.createElement('p');
+        description.classList.add('repo-description');
+        description.textContent = repo.description || 'No description available';
+
+        // Repository Stats (Stars and Forks)
+        const stats = document.createElement('p');
+        stats.classList.add('repo-stats');
+        stats.textContent = `Stars: ${repo.stargazers_count} | Forks: ${repo.forks_count}`;
+
+        // Repository Language
+        const language = document.createElement('p');
+        language.classList.add('repo-language');
+        language.textContent = `Language: ${repo.language || 'N/A'}`;
+
+        // Repository Last Updated
+        const lastUpdated = document.createElement('p');
+        lastUpdated.classList.add('repo-last-updated');
+        const updatedDate = new Date(repo.updated_at);
+        lastUpdated.textContent = `Last Updated: ${updatedDate.toLocaleDateString()}`;
+
+        // Repository Owner
+        const owner = document.createElement('p');
+        owner.classList.add('repo-owner');
+        // Make owner name a link to their profile
+        const ownerLink = document.createElement('a');
+        ownerLink.href = repo.owner.html_url;
+        ownerLink.target = '_blank'; // Open in new tab
+        ownerLink.rel = 'noopener noreferrer'; // Security measure
+        ownerLink.textContent = repo.owner.login;
+        owner.textContent = 'Owner: ';
+        owner.appendChild(ownerLink);
+
+        // Repository Topics
+        const topicsElement = document.createElement('div');
+        topicsElement.classList.add('repo-topics', 'mt-2');
+        if (repo.topics && repo.topics.length > 0) {
+            topicsElement.innerHTML = '<strong>Topics:</strong> ' + repo.topics.map(topic =>
+                `<span class="badge bg-secondary me-1">${topic}</span>`
+            ).join(' ');
+        } else {
+            topicsElement.innerHTML = '<strong>Topics:</strong> None listed';
+        }
+        // Append all elements to the card body
+        cardBody.appendChild(title);
+        cardBody.appendChild(description);
+        cardBody.appendChild(stats);
+        cardBody.appendChild(language);
+        cardBody.appendChild(lastUpdated);
+        cardBody.appendChild(owner);
+        cardBody.appendChild(topicsElement); // Add topics here
+        card.appendChild(cardBody);
+
+        return card;
+    }
+
+    /* --------------------------------- Step 5.5: Handling Pagination Clicks --------------------------------- */
+    async function handlePaginationClick(event) {
+        event.preventDefault();
+        const button = event.target;
+        const targetPage = parseInt(button.getAttribute('data-page'), 10);
+        const query = button.getAttribute('data-query');
+
+        if (!isNaN(targetPage) && query) {
+            currentPage = targetPage;
+            const data = await fetchGitHubRepos(query, currentPage);
+            if (data && data.items) {
+                displayResults(data);
+                displayPagination(data.total_count, query); // Update pagination display
+            }
+            document.getElementById('loading-message').style.display = 'none'; // Hide loading
+        }
+    }
+
+    // --- Helper function to trigger search ---
+    async function performSearch() {
+        const topics = getSearchQuery();
+        if (topics.length === 0) {
+            handleError(new Error('Please enter at least one valid topic.'));
+            return;
+        }
+        const query = topics.map(topic => `topic:${topic}`).join(' ');
+        currentPage = 1; // Reset to first page for new search
+        const data = await fetchGitHubRepos(query, currentPage);
+        if (data && data.items) {
+            displayResults(data);
+            displayPagination(data.total_count, query);
+        }
+        document.getElementById('loading-message').style.display = 'none';
+    }
+
+    /* --------------------------------- Step 6: Triggering the Search --------------------------------- */
+    // Event listener for the search button.
+    document.getElementById('search-button').addEventListener('click', async () => {
+        await performSearch();
+    });
+
+    // Event listener for the Enter key in the input field.
+    document.getElementById('topics-input').addEventListener('keypress', async (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevent default form submission (if it were in a form)
+            await performSearch();
+        }
+    });
+</script>
+
+</body>
+</html>
