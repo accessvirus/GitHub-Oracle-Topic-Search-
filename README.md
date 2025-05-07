@@ -1,5 +1,5 @@
 
-This mk8.1 version HTML file creates a web page designed as a "GitHub Oracle Topic Search" with an ancient Greek aesthetic. Its primary purpose is to allow users to search for GitHub repositories based on specific topics and explore related topics dynamically.
+This mk8.2  version HTML file creates a web page designed as a "GitHub Oracle Topic Search" with an ancient Greek aesthetic. Its primary purpose is to allow users to search for GitHub repositories based on specific topics and explore related topics dynamically.
 
 Here's a rundown of its key functionalities:
 
