@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Topic Search - MK8 [Ancient Greek]</title>
+
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Lato', 'sans-serif'],
+                        'serif': ['Cinzel', 'serif'], // Classical font for headings
+                    },
+                    colors: {
+                        'ivory': '#FFFFF0',
+                        'stone': '#EAE0D5', // Light beige/stone
+                        'terracotta': '#B85C38', // Earthy red-brown
+                        'olive': '#5C6B50', // Muted green
+                        'gold': '#D4AF37', // Muted gold
+                        'bronze': '#CD7F32', // Bronze accent
+                        'dark-text': '#3a3a3a', // Darker text for contrast
+                        'light-bg': '#FBF8F1', // Very light cream background
+                    },
+                    backgroundImage: {
+                        // Replace with your actual marble texture URL or use a gradient
+                        'marble': "linear-gradient(rgba(251, 248, 241, 0.8), rgba(251, 248, 241, 0.8)), url('https://www.transparenttextures.com/patterns/subtle-white-feathers.png')", // Example subtle texture
+                    },
+                    boxShadow: {
+                        'inner-light': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)',
+                        'subtle': '0 2px 5px rgba(0, 0, 0, 0.08)',
+                        'subtle-hover': '0 4px 12px rgba(0, 0, 0, 0.12)',
+                    },
+                    textShadow: {
+                        'emboss': '1px 1px 1px rgba(255, 255, 255, 0.5), -1px -1px 1px rgba(0, 0, 0, 0.1)', // Subtle emboss
+                    },
+                    keyframes: {
+                         pulseSubtle: {
+                            '0%, 100%': { opacity: '0.7' },
+                            '50%': { opacity: '1' },
+                        }
+                    },
+                    animation: {
+                        pulseSubtle: 'pulseSubtle 2s ease-in-out infinite',
+                    }
+                }
+            },
+            // Add textShadow plugin if needed (requires separate setup usually)
+            // plugins: [require('tailwindcss-textshadow')],
+        }
+    </script>
+    <style type="text/tailwindcss">
+        /* Custom base styles */
+        body {
+            @apply bg-light-bg text-dark-text font-sans antialiased;
+            /* Apply marble texture */
+            @apply bg-marble;
+        }
+        /* Custom emboss effect using utilities */
+        .text-emboss {
+             text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.6), -1px -1px 1px rgba(0, 0, 0, 0.1);
+        }
+        /* Focus styles */
+        #topics-input:focus {
+            @apply ring-2 ring-gold ring-offset-2 ring-offset-light-bg border-transparent outline-none;
+        }
+        #search-button:focus {
+             @apply ring-2 ring-gold ring-offset-2 ring-offset-light-bg outline-none;
+        }
+        .input-container:focus-within #topics-input {
+             @apply ring-2 ring-gold ring-offset-2 ring-offset-light-bg border-transparent outline-none;
+        }
+         .input-container:focus-within #search-button {
+             @apply bg-gold text-white border-gold;
+         }
+    </style>
+
+</head>
+<body class="py-12 px-4">
+
+    <!-- Container for Dynamic Pills -->
+    <ul id="dynamic-pills-container" class="nav nav-pills justify-center flex-wrap space-x-2 mb-8">
+        <!-- Dynamic pills will be inserted here by JavaScript -->
+    </ul>
+
+<div class="container mx-auto max-w-4xl"> <!-- Wider container -->
+
+<div class="container mx-auto max-w-4xl"> <!-- Wider container -->
+
+    <!-- Optional: Pillar-like side elements -->
+    <!-- <div class="fixed top-0 left-0 h-full w-16 bg-stone opacity-50 z-0"></div> -->
+    <!-- <div class="fixed top-0 right-0 h-full w-16 bg-stone opacity-50 z-0"></div> -->
+
+    <div class="relative z-10"> <!-- Content container -->
+        <h1 class="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-10 tracking-wider uppercase text-emboss text-terracotta">
+            GitHub Oracle Topic Search
+        </h1>
+
+        <!-- Container for Prefixed Popular Topics -->
+        <div id="popular-topics-container" class="flex flex-wrap justify-center gap-2 mb-4 border-b border-gray-300 pb-4">
+            <small class="w-full text-center text-gray-500 mb-2 block font-semibold">Popular Scrolls:</small>
+            <!-- Add 10 popular topics manually -->
+            <a href="#" class="badge inline-block px-3 py-1 text-sm rounded-md bg-stone border border-gray-300 text-dark-text hover:bg-terracotta hover:border-terracotta hover:text-white shadow-sm hover:shadow-md transition duration-200 cursor-pointer" data-topic="javascript">javascript</a>
+            <a href="#" class="badge inline-block px-3 py-1 text-sm rounded-md bg-stone border border-gray-300 text-dark-text hover:bg-terracotta hover:border-terracotta hover:text-white shadow-sm hover:shadow-md transition duration-200 cursor-pointer" data-topic="python">python</a>
+            <a href="#" class="badge inline-block px-3 py-1 text-sm rounded-md bg-stone border border-gray-300 text-dark-text hover:bg-terracotta hover:border-terracotta hover:text-white shadow-sm hover:shadow-md transition duration-200 cursor-pointer" data-topic="react">react</a>
+            <a href="#" class="badge inline-block px-3 py-1 text-sm rounded-md bg-stone border border-gray-300 text-dark-text hover:bg-terracotta hover:border-terracotta hover:text-white shadow-sm hover:shadow-md transition duration-200 cursor-pointer" data-topic="java">java</a>
+            <a href="#" class="badge inline-block px-3 py-1 text-sm rounded-md bg-stone border border-gray-300 text-dark-text hover:bg-terracotta hover:border-terracotta hover:text-white shadow-sm hover:shadow-md transition duration-200 cursor-pointer" data-topic="docker">docker</a>
+            <a href="#" class="badge inline-block px-3 py-1 text-sm rounded-md bg-stone border border-gray-300 text-dark-text hover:bg-terracotta hover:border-terracotta hover:text-white shadow-sm hover:shadow-md transition duration-200 cursor-pointer" data-topic="kubernetes">kubernetes</a>
+            <a href="#" class="badge inline-block px-3 py-1 text-sm rounded-md bg-stone border border-gray-300 text-dark-text hover:bg-terracotta hover:border-terracotta hover:text-white shadow-sm hover:shadow-md transition duration-200 cursor-pointer" data-topic="machine-learning">machine-learning</a>
+            <a href="#" class="badge inline-block px-3 py-1 text-sm rounded-md bg-stone border border-gray-300 text-dark-text hover:bg-terracotta hover:border-terracotta hover:text-white shadow-sm hover:shadow-md transition duration-200 cursor-pointer" data-topic="android">android</a>
+            <a href="#" class="badge inline-block px-3 py-1 text-sm rounded-md bg-stone border border-gray-300 text-dark-text hover:bg-terracotta hover:border-terracotta hover:text-white shadow-sm hover:shadow-md transition duration-200 cursor-pointer" data-topic="ios">ios</a>
+            <a href="#" class="badge inline-block px-3 py-1 text-sm rounded-md bg-stone border border-gray-300 text-dark-text hover:bg-terracotta hover:border-terracotta hover:text-white shadow-sm hover:shadow-md transition duration-200 cursor-pointer" data-topic="aws">aws</a>
+        </div>
+
+        <!-- Container for Collected Topics -->
+        <div id="collected-topics-container" class="flex flex-wrap justify-center gap-2 mb-10">
+            <!-- Badges will be inserted here -->
+            <!-- Example Badge Style (applied in JS):
+                 <a href="#" class="badge inline-block px-3 py-1 text-sm rounded-md bg-stone border border-gray-300 text-dark-text hover:bg-terracotta hover:border-terracotta hover:text-white shadow-sm hover:shadow-md transition duration-200 cursor-pointer">topic</a>
+            -->
+        </div>
+
+        <!-- Search Input and Button -->
+        <div class="relative input-container mb-12 max-w-2xl mx-auto"> <!-- Centered search bar -->
+            <div class="flex rounded-lg shadow-inner-light bg-ivory border border-gray-300 overflow-hidden">
+                <input type="text" id="topics-input" class="flex-grow bg-transparent text-lg px-5 py-3 text-dark-text placeholder-gray-500 focus:outline-none" placeholder="Seek knowledge by topic...">
+                <button id="search-button" class="bg-terracotta text-ivory font-serif uppercase tracking-wider font-bold px-6 py-3 hover:bg-olive hover:text-white transition duration-300 ease-in-out transform hover:scale-105">
+                    Search
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Message -->
+        <div id="loading-message" class="hidden text-center text-olive text-lg mt-10 animate-pulseSubtle">
+            Consulting the Oracle...
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-10" aria-live="polite">
+            <!-- Repo Cards will be inserted here -->
+            <!-- Example Card Structure (applied in JS):
+            <div class="col">
+                <div class="card bg-ivory border border-gray-300 rounded-lg shadow-subtle hover:shadow-subtle-hover transform hover:-translate-y-1 transition duration-300 ease-in-out h-full overflow-hidden">
+                    <div class="card-body p-5 flex flex-col h-full">
+                        <h5 class="card-title mb-2">
+                            <a href="#" target="_blank" rel="noopener noreferrer" class="repo-title font-serif font-bold text-xl text-terracotta hover:text-olive transition duration-200">Repo Name</a>
+                        </h5>
+                        <p class="repo-description text-dark-text text-sm mb-4 flex-grow">Description...</p>
+                        <div class="mt-auto pt-3 border-t border-gray-200 text-xs text-gray-600 space-y-1">
+                            <p class="repo-stats">Stars: 0 | Forks: 0</p>
+                            <p class="repo-language">Language: N/A</p>
+                            <p class="repo-last-updated">Updated: Date</p>
+                            <p class="repo-owner">Owner: <a href="#" target="_blank" rel="noopener noreferrer" class="font-bold hover:text-terracotta transition duration-200">owner</a></p>
+                            <div class="repo-topics mt-3">
+                                <small class="block mb-1 font-semibold">Scrolls (Topics):</small>
+                                <a href="#" class="badge topic-link-badge inline-block px-2 py-1 text-xs rounded bg-stone border border-gray-300 text-dark-text hover:bg-gold hover:text-white hover:border-gold transition duration-200 mr-1 mb-1 cursor-pointer" data-topic="topic1">topic1</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            -->
+        </div>
+
+        <!-- Pagination Controls -->
+        <nav id="pagination-controls" aria-label="Search results navigation" class="hidden mt-12">
+            <ul class="pagination flex justify-center space-x-2">
+                 <!-- Example Pagination Item (applied in JS):
+                 <li class="page-item">
+                     <button class="page-link px-4 py-2 bg-ivory border border-gray-300 text-terracotta rounded hover:border-gold hover:text-gold hover:shadow-sm transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400 disabled:border-gray-300">Prev</button>
+                 </li>
+                 <li class="page-item active">
+                     <span class="page-link px-4 py-2 bg-terracotta border border-terracotta text-white rounded shadow-sm">1</span>
+                 </li>
+                  -->
+            </ul>
+        </nav>
+    </div> <!-- /content container -->
+
+</div> <!-- /container -->
+
+<!-- JS Logic (Adjusted for Tailwind classes) -->
+<script>
+    // State for pagination
+    let currentPage = 1;
+    const perPage = 15;
+
+    /* --------------------------------- Step 1: Handling Input --------------------------------- */
+    function getSearchQuery() {
+        const input = document.getElementById('topics-input').value;
+        return input.split(',')
+                    .map(topic => topic.trim())
+                    .filter(Boolean);
+    }
+
+    /* --------------------------------- Step 2: Fetching GitHub Repos --------------------------------- */
+    async function fetchGitHubRepos(query, page = 1) {
+        const url = `https://api.github.com/search/repositories?q=${query}+in:topics&per_page=${perPage}&page=${page}`;
+        document.getElementById('loading-message').classList.remove('hidden');
+        document.getElementById('results-container').innerHTML = '';
+        document.getElementById('pagination-controls').classList.add('hidden');
+        document.getElementById('collected-topics-container').innerHTML = '';
+
+        try {
+            const response = await fetch(url);
+            if (response.status === 403) {
+                throw new Error('The Oracle is resting (API Rate Limit Exceeded). Please try again later.');
+            }
+            if (!response.ok) throw new Error(`Scrolls unreadable (Status: ${response.status})`);
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            handleError(error);
+            return null;
+        }
+    }
+
+    /* --------------------------------- Step 3: Handling Errors --------------------------------- */
+    function handleError(error) {
+        console.error("Oracle Error:", error);
+        const container = document.getElementById('results-container');
+        // Tailwind styled error
+        container.innerHTML = `<div class="col-span-full text-center text-red-700 mt-4 p-4 border border-red-300 rounded-lg bg-red-100">
+                                    <span class="font-bold">Error:</span> ${error.message}
+                               </div>`;
+        document.getElementById('loading-message').classList.add('hidden');
+        document.getElementById('pagination-controls').classList.add('hidden');
+        document.getElementById('collected-topics-container').innerHTML = '';
+    }
+
+    /* --------------------------------- Step 4: Displaying Results --------------------------------- */
+    function displayResults(data) {
+        const container = document.getElementById('results-container');
+        const repos = data.items || [];
+        container.innerHTML = '';
+
+        if (repos.length === 0) {
+            container.innerHTML = '<p class="col-span-full text-center text-gray-500 mt-4">The Agora is empty for this query.</p>';
+            document.getElementById('pagination-controls').classList.add('hidden');
+            return;
+        }
+
+        repos.forEach(repo => {
+            const repoCard = createRepoCard(repo);
+            container.appendChild(repoCard);
+        });
+        collectAndDisplayUniqueTopics(repos);
+    }
+
+    /* --- Helper Functions for Displaying Topics --- */
+    function collectAndDisplayUniqueTopics(repos) {
+        const allTopics = repos.flatMap(repo => repo.topics || []);
+        const uniqueTopics = [...new Set(allTopics)].sort();
+        displayCollectedTopics(uniqueTopics);
+    }
+
+    function displayCollectedTopics(topics) {
+        const container = document.getElementById('collected-topics-container');
+        container.innerHTML = ''; // Clear previous
+
+        if (topics.length > 0) {
+            topics.forEach(topic => {
+                const badgeLink = document.createElement('a');
+                badgeLink.href = '#';
+                // Apply Tailwind classes for collected topic badges
+                badgeLink.className = 'badge inline-block px-3 py-1 text-sm rounded-md bg-stone border border-gray-300 text-dark-text hover:bg-terracotta hover:border-terracotta hover:text-white shadow-sm hover:shadow-md transition duration-200 cursor-pointer';
+                badgeLink.dataset.topic = topic;
+                badgeLink.textContent = topic;
+                container.appendChild(badgeLink);
+            });
+        }
+    }
+
+    /* --------------------------------- Step 4.5: Handling Pagination Display --------------------------------- */
+    function displayPagination(totalCount, query) {
+        const paginationContainer = document.getElementById('pagination-controls');
+        const paginationList = paginationContainer.querySelector('.pagination');
+        if (!paginationList) return;
+        paginationList.innerHTML = '';
+
+        const maxResults = 1000;
+        const displayableTotalCount = Math.min(totalCount, maxResults);
+        const totalPages = Math.ceil(displayableTotalCount / perPage);
+
+        if (totalPages <= 1) {
+            paginationContainer.classList.add('hidden');
+            return;
+        }
+        paginationContainer.classList.remove('hidden');
+
+        const baseButtonClasses = 'page-link inline-block px-4 py-2 bg-ivory border border-gray-300 text-terracotta rounded hover:border-gold hover:text-gold hover:shadow-sm transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400 disabled:border-gray-300';
+        const activeClasses = 'bg-terracotta border-terracotta text-white shadow-sm';
+        const disabledClasses = 'opacity-50 cursor-not-allowed text-gray-400 border-gray-300';
+
+        // Previous Button
+        const prevLi = document.createElement('li');
+        prevLi.className = 'page-item';
+        const prevButton = document.createElement('button');
+        prevButton.className = baseButtonClasses;
+        prevButton.innerHTML = '&laquo; Prev';
+        prevButton.dataset.page = currentPage - 1;
+        prevButton.dataset.query = query;
+        if (currentPage === 1) {
+            prevButton.disabled = true;
+            // No need to add disabledClasses via JS if using :disabled selector in CSS (Tailwind does this)
+        }
+        prevLi.appendChild(prevButton);
+        paginationList.appendChild(prevLi);
+
+        // Current Page Info
+        const currentLi = document.createElement('li');
+        currentLi.className = 'page-item';
+        const currentSpan = document.createElement('span');
+        currentSpan.className = `${baseButtonClasses.replace('hover:border-gold hover:text-gold', '')} ${activeClasses}`; // Remove hover from active state
+        currentSpan.textContent = `Scroll ${currentPage} / ${totalPages}`;
+        currentLi.appendChild(currentSpan);
+        paginationList.appendChild(currentLi);
+
+        // Next Button
+        const nextLi = document.createElement('li');
+        nextLi.className = 'page-item';
+        const nextButton = document.createElement('button');
+        nextButton.className = baseButtonClasses;
+        nextButton.innerHTML = 'Next &raquo;';
+        nextButton.dataset.page = currentPage + 1;
+        nextButton.dataset.query = query;
+        if (currentPage >= totalPages) {
+            nextButton.disabled = true;
+        }
+        nextLi.appendChild(nextButton);
+        paginationList.appendChild(nextLi);
+
+        // Add event listeners
+        paginationList.querySelectorAll('button.page-link[data-page]').forEach(button => {
+             if (!button.disabled) {
+                button.addEventListener('click', handlePaginationClick);
+             }
+        });
+    }
+
+    /* --------------------------------- Step 5: Creating Repo Cards --------------------------------- */
+    function createRepoCard(repo) {
+        const col = document.createElement('div');
+        // col.className = 'col'; // Grid handles columns
+
+        const card = document.createElement('div');
+        card.className = 'card bg-ivory border border-gray-300 rounded-lg shadow-subtle hover:shadow-subtle-hover transform hover:-translate-y-1 transition duration-300 ease-in-out h-full overflow-hidden';
+
+        const cardBody = document.createElement('div');
+        cardBody.className = 'card-body p-5 flex flex-col h-full';
+
+        const titleContainer = document.createElement('h5');
+        titleContainer.className = 'card-title mb-2';
+        const titleLink = document.createElement('a');
+        titleLink.href = repo.html_url;
+        titleLink.target = '_blank';
+        titleLink.rel = 'noopener noreferrer';
+        titleLink.className = 'repo-title font-serif font-bold text-xl text-terracotta hover:text-olive transition duration-200';
+        titleLink.textContent = repo.name;
+        titleContainer.appendChild(titleLink);
+
+        const description = document.createElement('p');
+        description.className = 'repo-description text-dark-text text-sm mb-4 flex-grow';
+        description.textContent = repo.description || 'No inscription available.';
+
+        const detailsDiv = document.createElement('div');
+        detailsDiv.className = 'mt-auto pt-3 border-t border-gray-200 text-xs text-gray-600 space-y-1';
+
+        const stats = document.createElement('p');
+        stats.className = 'repo-stats';
+        stats.innerHTML = `<small>Stars: ${repo.stargazers_count} | Forks: ${repo.forks_count}</small>`;
+
+        const language = document.createElement('p');
+        language.className = 'repo-language';
+        language.innerHTML = `<small>Language: ${repo.language || 'N/A'}</small>`;
+
+        const lastUpdated = document.createElement('p');
+        lastUpdated.className = 'repo-last-updated';
+        lastUpdated.innerHTML = `<small>Updated: ${new Date(repo.updated_at).toLocaleDateString()}</small>`;
+
+        const owner = document.createElement('p');
+        owner.className = 'repo-owner';
+        owner.innerHTML = `<small>Owner: <a href="${repo.owner.html_url}" target="_blank" rel="noopener noreferrer" class="font-bold hover:text-terracotta transition duration-200">${repo.owner.login}</a></small>`;
+
+        const topicsDiv = document.createElement('div');
+        topicsDiv.className = 'repo-topics mt-3';
+        if (repo.topics && repo.topics.length > 0) {
+            let topicsHTML = '<small class="block mb-1 font-semibold text-gray-500">Scrolls (Topics):</small> ';
+            topicsHTML += repo.topics.map(topic =>
+                `<a href="#" class="badge topic-link-badge inline-block px-2 py-1 text-xs rounded bg-stone border border-gray-300 text-dark-text hover:bg-gold hover:text-white hover:border-gold transition duration-200 mr-1 mb-1 cursor-pointer" data-topic="${topic}">${topic}</a>`
+            ).join(' ');
+            topicsDiv.innerHTML = topicsHTML;
+        } else {
+            topicsDiv.innerHTML = '<small class="text-gray-500">Topics: None listed</small>';
+        }
+
+        detailsDiv.append(stats, language, lastUpdated, owner, topicsDiv);
+        cardBody.append(titleContainer, description, detailsDiv);
+        card.appendChild(cardBody);
+        col.appendChild(card);
+
+        return col;
+    }
+
+    /* --------------------------------- Step 5.5: Handling Pagination Clicks --------------------------------- */
+    async function handlePaginationClick(event) {
+        event.preventDefault();
+        const button = event.target.closest('button.page-link');
+        if (!button || button.disabled) return;
+
+        const targetPage = parseInt(button.dataset.page, 10);
+        const query = button.dataset.query;
+
+        if (!isNaN(targetPage) && targetPage > 0 && query) {
+            currentPage = targetPage;
+            const data = await fetchGitHubRepos(query, currentPage);
+            if (data) {
+                displayResults(data);
+                displayPagination(data.total_count, query);
+                document.querySelector('.container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            document.getElementById('loading-message').classList.add('hidden');
+        } else {
+            console.warn("Pagination Error: Invalid target.");
+        }
+    }
+
+    /* --- Helper function to extract top topics from search results --- */
+    function extractTopTopics(repos, count = 30) {
+        if (!repos || repos.length === 0) return [];
+
+        const topicCounts = {};
+        repos.forEach(repo => {
+            if (repo.topics && repo.topics.length > 0) {
+                repo.topics.forEach(topic => {
+                    topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+                });
+            }
+        });
+
+        const sortedTopics = Object.entries(topicCounts)
+            .sort(([, countA], [, countB]) => countB - countA) // Sort by count descending
+            .map(([topic]) => topic); // Get just the topic string
+
+        return sortedTopics.slice(0, count);
+    }
+
+    /* --- Helper function to update the dynamic pill buttons --- */
+    function updatePillButtons(topics) {
+        const pillsContainer = document.getElementById('dynamic-pills-container');
+        if (!pillsContainer) return;
+        pillsContainer.innerHTML = ''; // Clear existing pills
+
+        const numPills = Math.min(topics.length, 30);
+
+        for (let i = 0; i < numPills; i++) {
+            const topic = topics[i];
+            const li = document.createElement('li');
+            li.className = 'nav-item dropdown mb-2'; // Added mb-2 for better wrapping
+
+            const a = document.createElement('a');
+            a.className = 'nav-link dropdown-toggle bg-stone text-dark-text hover:bg-terracotta hover:text-white font-serif';
+            a.href = '#';
+            a.setAttribute('role', 'button');
+            a.setAttribute('data-bs-toggle', 'dropdown');
+            a.setAttribute('aria-expanded', 'false');
+            a.setAttribute('data-topic', topic); // For handleTopicClick
+            a.textContent = topic;
+
+            const ulDropdown = document.createElement('ul');
+            ulDropdown.className = 'dropdown-menu bg-ivory border border-gray-300';
+            
+            // First dropdown item: Search for this topic (acts like clicking the pill itself)
+            const liItemSearch = document.createElement('li');
+            const aItemSearch = document.createElement('a');
+            aItemSearch.className = 'dropdown-item text-dark-text hover:bg-stone hover:text-terracotta';
+            aItemSearch.href = '#';
+            aItemSearch.textContent = `Search: ${topic}`;
+            aItemSearch.setAttribute('data-topic', topic); // Make it clickable via handleTopicClick
+            liItemSearch.appendChild(aItemSearch);
+            ulDropdown.appendChild(liItemSearch);
+
+            // Generic second item
+            const liItemGeneric = document.createElement('li');
+            const aItemGeneric = document.createElement('a');
+            aItemGeneric.className = 'dropdown-item text-dark-text hover:bg-stone hover:text-terracotta';
+            aItemGeneric.href = '#'; // Could be a placeholder or link to more info
+            aItemGeneric.textContent = `More about ${topic}`;
+            liItemGeneric.appendChild(aItemGeneric);
+            ulDropdown.appendChild(liItemGeneric);
+
+            li.appendChild(a);
+            li.appendChild(ulDropdown);
+            pillsContainer.appendChild(li);
+        }
+    }
+
+    /* --- Helper function to trigger search --- */
+    async function performSearch(topicsArray = null) {
+        const topicsToSearch = topicsArray || getSearchQuery();
+        if (topicsToSearch.length === 0) {
+            handleError(new Error('Please provide a topic for the query.'));
+            return;
+        }
+        const query = topicsToSearch.map(topic => `topic:${topic}`).join(' ');
+        currentPage = 1;
+        const data = await fetchGitHubRepos(query, currentPage);
+        if (data) {
+            displayResults(data);
+            displayPagination(data.total_count, query);
+
+            // Update pill buttons based on the new search results
+            const topRepoTopics = extractTopTopics(data.items);
+            updatePillButtons(topRepoTopics);
+        }
+        document.getElementById('loading-message').classList.add('hidden');
+    }
+
+    /* --------------------------------- Step 6: Triggering the Search --------------------------------- */
+    function handleTopicClick(event) {
+        const topicBadge = event.target.closest('[data-topic]');
+        if (topicBadge) {
+            event.preventDefault();
+            const topic = topicBadge.dataset.topic;
+            if (topic) {
+                document.getElementById('topics-input').value = topic;
+                performSearch([topic]);
+            }
+        }
+    }
+
+    /* --- Add event listeners --- */
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('search-button').addEventListener('click', () => performSearch());
+        document.getElementById('topics-input').addEventListener('keypress', event => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                performSearch();
+            }
+        });
+        document.body.addEventListener('click', handleTopicClick);
+        const paginationNav = document.getElementById('pagination-controls');
+        if (paginationNav) {
+            paginationNav.addEventListener('click', handlePaginationClick);
+        }
+
+        // Initial search for "python" to populate pills and results
+        performSearch(['python']);
+    });
+</script>
+
+<!-- Bootstrap JavaScript CDN -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
